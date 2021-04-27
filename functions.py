@@ -1,16 +1,17 @@
 import pandas as pd
 def listMaker(data,column,initial):
     """
-    it's mainly used to remove duplicates and add the 'all' parameter)
+    Function that takes a pandas dataFrame and gets the list of all the items in it, it also adds an option(initial)
     """
     newList = data[column].tolist()
     newList = list(set(newList))
+    #adding value to the end of the list
     newList.append(initial)
     return tuple(newList)
 
 def findTowerType(data):
     """
-    find tower types from the main use column
+    find tower main usage, this function takes a pandas dataframe and adds 3 new columns each corresponding to a domain( residential ...)
     """
     criteria= '|'.join(['commercial','mall','retail'])
     search1 = data['Main use'].str.contains('residential').tolist()
@@ -21,6 +22,7 @@ def findTowerType(data):
             other.append(True)
         else:
             other.append(False)
+    #Adding the data to the dataframe
     data['r'] = search1
     data['c'] = search2
     data['o'] = other
@@ -28,7 +30,7 @@ def findTowerType(data):
 
 def dataForMap(data):
     """
-    colors and lat/lon
+    function that formats data to a lighter dataframe, called before rendering
     """
     colorList=[]
     #creating a list of colors
@@ -39,13 +41,14 @@ def dataForMap(data):
             colorList.append('blue')
         else:
             colorList.append('green')
+    #creation of new data frame
     usefuldata = {'name':data['Name'].tolist(),'height':data['Meters'].tolist(),'remark':data['Remarks'].tolist(),'lat':data['Lat'].tolist(),'lon':data['Lon'].tolist(),'colors':colorList}
     newData = pd.DataFrame(usefuldata)
     return newData
 
 def sortData(data,country='All',height={'min':0,'max':830},types={'r':True,'c':True,'o':True}):
     """
-    will sort the data
+    main function that filters all the data depending on user input
     """
     data = findTowerType(data)
     if country != 'All':
@@ -62,6 +65,7 @@ def sortData(data,country='All',height={'min':0,'max':830},types={'r':True,'c':T
             if i[1] == True:
                 if row[i[0]] == i[1]:
                     finaleDataFrame = finaleDataFrame.append(row,ignore_index=True)
+    #returning filtered data or empty dataframe if no results where found
     if len(finaleDataFrame.index)>0:
         return dataForMap(finaleDataFrame)
     else:
@@ -69,7 +73,8 @@ def sortData(data,country='All',height={'min':0,'max':830},types={'r':True,'c':T
 
 def specificTowers(data,towerNames):
     """
-    return usefull data for the map orresponding to one specific tower
+    function that filters the data and leaves only the towers choosen by the user
     """
+    #filtering the data
     specificRows = data.loc[data['Name'].isin(towerNames)]
     return specificRows
